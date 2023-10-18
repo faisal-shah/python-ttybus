@@ -46,8 +46,9 @@ def create_bus(n=0):
         )
         master_fds.append(pair["mfd"])
 
-    log.debug(f"Starting thread with args: {[master_fds]}")
-    thread = threading.Thread(target=fdBus.entry, args=[master_fds])
+    thread_args = [master_fds, False]
+    log.debug(f"Starting thread with args: {thread_args}")
+    thread = threading.Thread(target=fdBus.entry, args=thread_args)
     thread.start()
 
     return {"pairs": pairs, "thread": thread}

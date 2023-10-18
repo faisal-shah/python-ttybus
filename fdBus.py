@@ -8,12 +8,15 @@ def forward_data(reader, writers):
             os.write(w, data)
 
 
-def entry(fds):
+def entry(fds, one_way=False):
     loop = asyncio.new_event_loop()
 
-    for i, mfd in enumerate(fds):
-        other_master_fds = fds[:i] + fds[i + 1 :]
-        loop.add_reader(mfd, forward_data, mfd, other_master_fds)
+    if not one_way:
+        for i, mfd in enumerate(fds):
+            other_master_fds = fds[:i] + fds[i + 1 :]
+            loop.add_reader(mfd, forward_data, mfd, other_master_fds)
+    else:
+        loop.add_reader(fds[0], forward_data, fds[0], fds[1:])
 
     try:
         loop.run_forever()
