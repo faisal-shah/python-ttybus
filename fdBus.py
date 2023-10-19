@@ -1,4 +1,5 @@
-import os, asyncio
+import asyncio
+import os
 
 
 def forward_data(reader, writers):
@@ -27,8 +28,9 @@ def entry(fds, one_way=False):
 
 
 if __name__ == "__main__":
+    import sys
+    import threading
     from ptyBus import create_pty_pairs
-    import sys, os, threading
 
     n = 2
     if len(sys.argv) < 3:

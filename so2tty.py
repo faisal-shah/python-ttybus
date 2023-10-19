@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-import os, socket, threading, logging, select
+import os
+import socket
+import threading
+import logging
+import select
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +40,7 @@ def toTty(tty, sock):
 def kill_conn_and_threads(threads, conn):
     global run_token
     if run_token:
-        log.info(f"Threads already running, kill and close existing connection")
+        log.info("Threads already running, kill and close existing connection")
         run_token = False
         for t in threads:
             t.join()
@@ -66,7 +70,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            log.info(f"Waiting for connection...")
+            log.info("Waiting for connection...")
             newconn, addr = s.accept()
             newconn.settimeout(1)
             newconn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)

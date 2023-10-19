@@ -1,5 +1,9 @@
-import socket, threading, serial
-import logging, time, sys
+import socket
+import threading
+import serial
+import logging
+import time
+import sys
 
 
 log = logging.getLogger(__name__)
@@ -9,7 +13,6 @@ run_token = False
 
 
 def toSock(s, ser):
-    ctr = 0
     while run_token:
         d = ser.read(1)
         if d:
@@ -23,7 +26,6 @@ def toSock(s, ser):
 
 
 def fromSock(s, ser):
-    ctr = 0
     while run_token:
         try:
             d = s.recv(1)
@@ -43,7 +45,7 @@ def fromSock(s, ser):
 def kill_conn_and_threads(threads, conn):
     global run_token
     if run_token:
-        log.info(f"Threads already running, kill and close existing connection")
+        log.info("Threads already running, kill and close existing connection")
         run_token = False
         for t in threads:
             t.join()

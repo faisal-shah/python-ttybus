@@ -1,4 +1,9 @@
-import os, pty, tty, termios, pathlib, threading
+import os
+import pty
+import tty
+import termios
+import pathlib
+import threading
 import logging
 import fdBus
 
