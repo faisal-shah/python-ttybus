@@ -1,52 +1,85 @@
-import asyncio
+import logging
 import os
+import select
+import threading
 
 
-def forward_data(reader, writers):
-    data = os.read(reader, 1024)
-    if data:
-        for w in writers:
-            os.write(w, data)
+class FdBus:
+    def __init__(self, fds, one_way=False, name=None):
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.run_token = False
+        self.threads = []
+        self.name = name
 
+        self.log.info(f"Initializing {name}")
+        if not one_way:
+            for i, mfd in enumerate(fds):
+                other_master_fds = fds[:i] + fds[i + 1 :]
+                thread = threading.Thread(
+                    target=self.forward_data, args=[mfd, other_master_fds]
+                )
+                thread.name = f"{self.__class__.__name__}::{self.name}::mfd-{mfd}"
+                self.threads.append(thread)
+        else:
+            thread = threading.Thread(target=self.forward_data, args=[fds[0], fds[1:]])
+            thread.name = f"{self.__class__.__name__}::{self.name}::mfd-{fds[0]}"
+            self.threads.append(thread)
 
-def entry(fds, one_way=False):
-    loop = asyncio.new_event_loop()
+    def forward_data(self, reader, writers):
+        self.log.debug(f"Starting forward_data on {self.__class__.__name__}, r/w {[reader, writers]}")
+        while self.run_token:
+            rdy, _, _ = select.select([reader], [], [], 0.5)
+            try:
+                data = os.read(rdy[0], 1)
+            except IndexError:
+                continue
+            if data:
+                for w in writers:
+                    os.write(w, data)
+        self.log.debug(f"END forward_data on {self.__class__.__name__}, r/w {[reader, writers]}")
 
-    if not one_way:
-        for i, mfd in enumerate(fds):
-            other_master_fds = fds[:i] + fds[i + 1 :]
-            loop.add_reader(mfd, forward_data, mfd, other_master_fds)
-    else:
-        loop.add_reader(fds[0], forward_data, fds[0], fds[1:])
+    def start(self):
+        self.log.info(f"Starting threads {[t.name for t in self.threads]}")
+        self.run_token = True
+        for t in self.threads:
+            t.start()
 
-    try:
-        loop.run_forever()
-    except KeyboardInterrupt:
-        loop.remove_reader(forward_data)
-        loop.stop()
-        loop.run_until_complete()
+    def stop(self):
+        self.log.info(f"Stopping threads {[t.name for t in self.threads]}")
+        self.run_token = False
+        for t in self.threads:
+            t.join()
 
 
 if __name__ == "__main__":
+    import ptyBus
     import sys
-    import threading
-    from ptyBus import create_pty_pairs
+    import time
+
+    log = logging.getLogger(__name__)
+    logging.basicConfig(level="INFO")
 
     n = 2
     if len(sys.argv) < 3:
         print(f"Creating {n} pty pairs")
-        slave_fds, slave_paths, master_fds, master_paths = create_pty_pairs(n)
+        pairs = ptyBus.PtyBus.create_pty_pairs(n)
+        master_fds = [i["mfd"] for i in pairs]
+        slave_fds = [i["sfd"] for i in pairs]
+        slave_paths = [i["spath"] for i in pairs]
         for i in range(n):
             print(
-                f"mfd={master_fds[i]} (inh={os.get_inheritable(master_fds[i])}), sfd={slave_fds[i]}, spath={slave_paths[i]}, mpath={master_paths[i]}"
+                f"mfd={master_fds[i]} (inh={os.get_inheritable(master_fds[i])}), sfd={slave_fds[i]}, spath={slave_paths[i]}"
             )
     else:
         master_fds = [int(i) for i in sys.argv[1:]]
 
-    thread = threading.Thread(target=entry, args=[master_fds])
-    thread.start()
+    bus = FdBus(master_fds, name="busName")
+    bus.start()
 
     try:
-        thread.join()
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
-        pass
+        log.info("Shutting down ...")
+
+    bus.stop()

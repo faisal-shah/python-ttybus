@@ -18,6 +18,7 @@ def toSocket(tty, sock):
         try:
             data = os.read(rdy[0], 1)
         except IndexError:
+            log.debug("Timed out on tty")
             continue
         if data:
             log.debug(f"toSock: {data}")
@@ -31,6 +32,7 @@ def toTty(tty, sock):
             data = sock.recv(1)
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
         except TimeoutError:
+            log.debug("Timed out on socket")
             continue
         if data:
             log.debug(f"toTty: {data}")
