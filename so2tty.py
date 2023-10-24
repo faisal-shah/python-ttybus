@@ -13,30 +13,40 @@ run_token = False
 
 
 def toSocket(tty, sock):
-    while run_token:
-        rdy, _, _ = select.select([tty], [], [], 1)
-        try:
-            data = os.read(rdy[0], 1)
-        except IndexError:
-            log.debug("Timed out on tty")
-            continue
-        if data:
-            log.debug(f"toSock: {data}")
-            sock.send(data)
-            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
+    global run_token
+    try:
+        while run_token:
+            rdy, _, _ = select.select([tty], [], [], 1)
+            try:
+                data = os.read(rdy[0], 1)
+            except IndexError:
+                log.debug("Timed out on tty")
+                continue
+            if data:
+                log.debug(f"toSock: {data}")
+                sock.send(data)
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
+    except Exception:
+        run_token = False
+        log.exception("Unhandled exception")
 
 
 def toTty(tty, sock):
-    while run_token:
-        try:
-            data = sock.recv(1)
-            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
-        except TimeoutError:
-            log.debug("Timed out on socket")
-            continue
-        if data:
-            log.debug(f"toTty: {data}")
-            os.write(tty, data)
+    global run_token
+    try:
+        while run_token:
+            try:
+                data = sock.recv(1)
+                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
+            except TimeoutError:
+                log.debug("Timed out on socket")
+                continue
+            if data:
+                log.debug(f"toTty: {data}")
+                os.write(tty, data)
+    except Exception:
+        run_token = False
+        log.exception("Unhandled exception")
 
 
 def kill_conn_and_threads(threads, conn):
@@ -45,7 +55,13 @@ def kill_conn_and_threads(threads, conn):
         log.info("Threads already running, kill and close existing connection")
         run_token = False
         for t in threads:
-            t.join()
+            while True:
+                try:
+                    t.join()
+                except KeyboardInterrupt:
+                    continue
+                else:
+                    break
         if conn:
             conn.close()
         else:

@@ -48,7 +48,13 @@ class FdBus:
         self.log.info(f"Stopping threads {[t.name for t in self.threads]}")
         self.run_token = False
         for t in self.threads:
-            t.join()
+            while True:
+                try:
+                    t.join()
+                except KeyboardInterrupt:
+                    continue
+                else:
+                    break
 
 
 if __name__ == "__main__":

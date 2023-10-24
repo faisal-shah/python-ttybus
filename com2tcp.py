@@ -13,33 +13,43 @@ run_token = False
 
 
 def toSock(s, ser):
-    while run_token:
-        d = ser.read(1)
-        if d:
-            try:
-                s.send(d)
-                # s.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
-            except TimeoutError:
-                log.critical("Socket OVERFLOW")
-        for i in d:
-            log.debug(f"TX: {i:02x}")
+    global run_token
+    try:
+        while run_token:
+            d = ser.read(1)
+            if d:
+                try:
+                    s.send(d)
+                    # s.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
+                except TimeoutError:
+                    log.critical("Socket OVERFLOW")
+            for i in d:
+                log.debug(f"TX: {i:02x}")
+    except Exception:
+        run_token = False
+        log.exception("Unhandled exception")
 
 
 def fromSock(s, ser):
-    while run_token:
-        try:
-            d = s.recv(1)
-            # s.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
-        except TimeoutError:
-            continue
-        if d:
+    global run_token
+    try:
+        while run_token:
             try:
-                ser.write(d)
-            except serial.SerialTimeoutException:
-                log.critical("Serial OVERFLOW")
+                d = s.recv(1)
+                # s.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, 1)
+            except TimeoutError:
                 continue
-        for i in d:
-            log.debug(f"RX: {i:02x}")
+            if d:
+                try:
+                    ser.write(d)
+                except serial.SerialTimeoutException:
+                    log.critical("Serial OVERFLOW")
+                    continue
+            for i in d:
+                log.debug(f"RX: {i:02x}")
+    except Exception:
+        run_token = False
+        log.exception("Unhandled exception")
 
 
 def kill_conn_and_threads(threads, conn):
@@ -48,7 +58,13 @@ def kill_conn_and_threads(threads, conn):
         log.info("Threads already running, kill and close existing connection")
         run_token = False
         for t in threads:
-            t.join()
+            while True:
+                try:
+                    t.join()
+                except KeyboardInterrupt:
+                    continue
+                else:
+                    break
         if conn:
             conn.close()
         else:
@@ -93,7 +109,7 @@ if __name__ == "__main__":
     thread2.start()
 
     try:
-        while True:
+        while run_token:
             time.sleep(1)
     except KeyboardInterrupt:
         log.info("Ctrl-C received")
