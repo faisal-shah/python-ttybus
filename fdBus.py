@@ -34,7 +34,10 @@ class FdBus:
             except IndexError:
                 continue
             if data:
-                for w in writers:
+                _, rdy, _ = select.select([], writers, [], 0)
+                if len(rdy) != len(writers):
+                    self.log.debug(f"Not all fds are ready to write: rdy {rdy}, all {writers}")
+                for w in rdy:
                     os.write(w, data)
         self.log.debug(f"END forward_data on {self.__class__.__name__}, r/w {[reader, writers]}")
 
