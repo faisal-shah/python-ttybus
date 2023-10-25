@@ -209,7 +209,7 @@
         <mxCell id="xXA_M8LPOf2HpQks0UbA-54" value="TCP Socket" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="330" y="110" width="70" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="xXA_M8LPOf2HpQks0UbA-55" value="com2tcp&lt;br&gt;OR&lt;br&gt;so2tty" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="xXA_M8LPOf2HpQks0UbA-55" value="com2tcp&lt;br&gt;OR&lt;br&gt;tty2tcp" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="160" y="110" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="xXA_M8LPOf2HpQks0UbA-58" value="Serial Port" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
@@ -218,7 +218,7 @@
         <mxCell id="xXA_M8LPOf2HpQks0UbA-59" value="Serial Port" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
           <mxGeometry x="620" y="100" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="xXA_M8LPOf2HpQks0UbA-60" value="com2tcp&lt;br&gt;OR&lt;br&gt;so2tty" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="xXA_M8LPOf2HpQks0UbA-60" value="com2tcp&lt;br&gt;OR&lt;br&gt;tty2tcp" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="450" y="110" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="xXA_M8LPOf2HpQks0UbA-61" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="xXA_M8LPOf2HpQks0UbA-58" target="xXA_M8LPOf2HpQks0UbA-55">
@@ -245,7 +245,7 @@
             <mxPoint x="460" y="150" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="xXA_M8LPOf2HpQks0UbA-66" value="com2tcp, so2tty" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="xXA_M8LPOf2HpQks0UbA-66" value="com2tcp, tty2tcp" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="10" y="40" width="110" height="30" as="geometry" />
         </mxCell>
       </root>
