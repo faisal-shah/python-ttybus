@@ -44,7 +44,7 @@ class Tty2Tcp:
 
     def main(self):
         self.log.info("Starting server ...")
-        s = socket.create_server((self.host, self.port))
+        s = socket.create_server((self.host, self.port), reuse_port=True)
         s.settimeout(0.5)
         self.fdtty = os.open(self.tty_path, os.O_APPEND | os.O_RDWR | os.O_NOCTTY)
         self.conn = None
